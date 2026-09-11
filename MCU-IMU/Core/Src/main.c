@@ -153,7 +153,9 @@ int main(void)
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(500);
   Init_6050();
+  HAL_Delay(500);
   /* USER CODE END 2 */
 
   /* Infinite loop */
