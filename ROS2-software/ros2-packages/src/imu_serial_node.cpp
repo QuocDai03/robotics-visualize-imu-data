@@ -207,7 +207,7 @@ private:
 
         // Debug output
         RCLCPP_INFO(
-            get_logger(),
+            this->get_logger(),
             "Roll: %.2f deg, Pitch: %.2f deg",
             roll,
             pitch
@@ -274,6 +274,16 @@ private:
 
         msg.orientation.z =
             cr * cp * sy - sr * sp * cy;
+
+        // Debug quaternion
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Quaternion: x=%.3f y=%.3f z=%.3f w=%.3f",
+            msg.orientation.x,
+            msg.orientation.y,
+            msg.orientation.z,
+            msg.orientation.w
+        );
 
         imu_publisher_->publish(msg);
     }
