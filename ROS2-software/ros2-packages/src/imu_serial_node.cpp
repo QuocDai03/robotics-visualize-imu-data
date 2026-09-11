@@ -1,6 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -54,6 +57,10 @@ public:
             std::chrono::milliseconds(10),
             std::bind(&ImuSerialNode::readSerialData, this)
         );
+
+        // TransformBroadcaster: Variable used for visulizing in Rviz2
+        tf_broadcaster_ =
+            std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     }
 
     ~ImuSerialNode()
@@ -213,7 +220,7 @@ private:
             pitch
         );
 
-        publishImu(roll, pitch);
+        publishImu(roll, -pitch);
     }
 
     bool parseImuData(
@@ -274,7 +281,7 @@ private:
 
         msg.orientation.z =
             cr * cp * sy - sr * sp * cy;
-
+                        
         // Debug quaternion
         RCLCPP_INFO(
             this->get_logger(),
@@ -286,6 +293,39 @@ private:
         );
 
         imu_publisher_->publish(msg);
+
+
+        // ------------------------------------------------
+        // Publish TF: world -> imu_link
+        // Used for visulizing in Rviz2
+        // ------------------------------------------------
+
+        geometry_msgs::msg::TransformStamped transform;
+
+        transform.header.stamp = now();
+        transform.header.frame_id = "world";
+        transform.child_frame_id = "imu_link";
+
+        // Position
+        transform.transform.translation.x = 0.0;
+        transform.transform.translation.y = 0.0;
+        transform.transform.translation.z = 0.0;
+
+        // Orientation
+        transform.transform.rotation.x =
+            msg.orientation.x;
+
+        transform.transform.rotation.y =
+            msg.orientation.y;
+
+        transform.transform.rotation.z =
+            msg.orientation.z;
+
+        transform.transform.rotation.w =
+            msg.orientation.w;
+
+        tf_broadcaster_->sendTransform(transform);
+
     }
 
 private:
@@ -301,6 +341,8 @@ private:
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr
         imu_publisher_;
+
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
 

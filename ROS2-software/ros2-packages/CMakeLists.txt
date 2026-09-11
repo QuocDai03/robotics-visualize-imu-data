@@ -12,6 +12,8 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 add_executable(imu_serial_node
   src/imu_serial_node.cpp
@@ -20,6 +22,8 @@ add_executable(imu_serial_node
 ament_target_dependencies(imu_serial_node
   rclcpp
   sensor_msgs
+  tf2_ros
+  geometry_msgs
 )
 
 install(TARGETS
