@@ -170,7 +170,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    sprintf(buffer, "Roll: %.2f    Pitch: %.2f\r\n", roll,pitch);
+    sprintf(buffer, "Roll:%.2f;Pitch:%.2f\r\n", roll,pitch);
     send_string(buffer);
     HAL_Delay(200);
 
