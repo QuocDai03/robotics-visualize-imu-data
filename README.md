@@ -126,12 +126,12 @@ The visualization will focus on:
 
 ### 3.2 🔩 Hardware
 
-| Hardware                       | Description                                 |
-| ------------------------------ | ------------------------------------------- |
-| 🧭 **MPU6050**                 | 6-axis IMU with accelerometer and gyroscope |
-| 🔲 **STM32F103C8T6 Blue Pill** | Main microcontroller                        |
-| 💻 **Laptop / PC**             | Runs ROS 2 Humble and RViz2                 |
-| 🔌 **USB / Serial connection** | Communication between MCU and laptop        |
+| Hardware                            | Description                                                                |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| 🧭 **MPU6050**                      | 6-axis IMU with accelerometer and gyroscope                                |
+| 🔲 **STM32F103C8T6 Blue Pill**      | Main microcontroller                                                       |
+| 🔌 **PL2303 USB-to-UART Converter** | Converts the STM32 UART interface to USB for communication with the laptop |
+| 💻 **Laptop / PC**                  | Runs ROS 2 Humble and RViz2                                                |
 
 ### MPU6050
 
@@ -147,6 +147,7 @@ For Phase 1, the main focus is obtaining the orientation around:
 
 ```text
 Roll  → Rotation around X-axis
+
 Pitch → Rotation around Y-axis
 ```
 
@@ -163,7 +164,11 @@ MPU6050
    ▼
 STM32F103C8T6
    │
-   │ Serial communication
+   │ UART
+   ▼
+PL2303
+   │
+   │ USB
    ▼
 Laptop
 ```
@@ -174,18 +179,53 @@ The firmware will:
 2. 🔌 Initialize the I²C interface.
 3. 🧭 Initialize the MPU6050.
 4. 📥 Read IMU data.
-5. 📤 Send the required data to the laptop.
+5. 📐 Calculate Roll and Pitch.
+6. 📤 Transmit the IMU data through the STM32 UART interface.
+
+### PL2303 USB-to-UART Converter
+
+The **PL2303** is used as a bridge between the STM32 UART interface and the laptop's USB interface.
+
+Its role is:
+
+```text
+STM32 UART
+    │
+    │ UART protocol
+    ▼
+  PL2303
+    │
+    │ USB
+    ▼
+ Laptop / PC
+```
+
+The PL2303 does **not** process the IMU data. It only converts the electrical/interface format between **UART** on the STM32 side and **USB** on the laptop side.
+
+The laptop receives the UART data through a USB serial device such as:
+
+```text
+/dev/ttyUSB0
+```
 
 ### Laptop / PC
 
-The laptop runs the ROS 2 environment and performs the visualization:
+The laptop runs the ROS 2 environment and performs the data processing and visualization:
 
 ```text
 STM32
   │
-  │ IMU data
+  │ UART
   ▼
-ROS 2
+PL2303
+  │
+  │ USB
+  ▼
+Laptop
+  │
+  │ ROS 2
+  ▼
+/imu/data
   │
   ▼
 RViz2
@@ -195,6 +235,7 @@ RViz2
 ```
 
 ---
+
 
 ## 🎯 Phase 1 Goal
 
